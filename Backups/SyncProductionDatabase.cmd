@@ -1,4 +1,6 @@
-SET LOGFILE=C:\temp\restore_log.txt
+SET logDateTime=%DATE:~-4%%DATE:~4,2%%DATE:~7,2%_%TIME:~0,2%%TIME:~3,2%%TIME:~6,2%
+SET logDateTime=%logDateTime: =0%
+SET LOGFILE=C:\temp\restore_log_%logDateTime%.txt
 
 ECHO ========================================== >> %LOGFILE%
 ECHO Restore operation started: %DATE% %TIME% >> %LOGFILE%
