@@ -1,6 +1,9 @@
+;@ECHO OFF
+
 SET logDateTime=%DATE:~-4%%DATE:~4,2%%DATE:~7,2%_%TIME:~0,2%%TIME:~3,2%%TIME:~6,2%
 SET logDateTime=%logDateTime: =0%
 SET LOGFILE=C:\temp\restore_log_%logDateTime%.txt
+SET destPath=C:\temp\restore
 
 ECHO ========================================== >> %LOGFILE%
 ECHO Restore operation started: %DATE% %TIME% >> %LOGFILE%
@@ -12,16 +15,30 @@ FOR /F "delims=" %%I IN ('DIR F:\MySQL80Backup\*.sql /A-D /B /O-D /TW') DO (SET 
     ECHO The newest backup file is: %NewestFile%
 
 IF NOT "%NewestFile%" == "" (
-    ECHO Restoring: %NewestFile% >> %LOGFILE%
-    ECHO Restoring: %NewestFile%
-    "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -usa -pBackup2025 -v < F:\MySQL80Backup\%NewestFile% >> %LOGFILE% 2>&1
-    IF %ERRORLEVEL% EQU 0 (
-        ECHO Restore completed successfully >> %LOGFILE%
-        ECHO Restore completed successfully
-    ) ELSE (
-        ECHO Restore failed with error code: %ERRORLEVEL% >> %LOGFILE%
-        ECHO Restore failed with error code: %ERRORLEVEL%
-    )
+	ECHO Copying: %NewestFile% >> %LOGFILE%
+    ECHO Copying: %NewestFile%
+	
+	IF NOT EXIST %destPath% (
+		mkdir %destPath%
+	)
+	
+	copy "F:\MySQL80Backup\%NewestFile%" "%destPath%\%NewestFile%"
+	
+	IF EXIST "%destPath%\%NewestFile%" (
+		ECHO Restoring: "%destPath%\%NewestFile%" >> %LOGFILE%
+		ECHO Restoring: "%destPath%\%NewestFile%"
+		"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -usa -pBackup2025 -v < "%destPath%\%NewestFile%" >> %LOGFILE% 2>&1
+		IF %ERRORLEVEL% EQU 0 (
+			ECHO Restore completed successfully >> %LOGFILE%
+			ECHO Restore completed successfully
+		) ELSE (
+			ECHO Restore failed with error code: %ERRORLEVEL% >> %LOGFILE%
+			ECHO Restore failed with error code: %ERRORLEVEL%
+		)
+	) ELSE (
+		ECHO Failed to copy F:\MySQL80Backup\%NewestFile% to "%destPath%\%NewestFile%" >> %LOGFILE%
+		ECHO Failed to copy F:\MySQL80Backup\%NewestFile% to "%destPath%\%NewestFile%"
+	)
 ) ELSE (
     ECHO Nothing to do! Bye! >> %LOGFILE%
     ECHO Nothing to do! Bye!
